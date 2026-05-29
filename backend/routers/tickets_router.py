@@ -45,8 +45,9 @@ async def _bg_analyze_and_notify(
     description: str,
     customer_name: str,
     priority: str,
+    customer_email: str = "",
 ):
-    """Runs after ticket creation: AI analysis + auto-escalation + Telegram."""
+    """Runs after ticket creation: AI analysis + auto-escalation + email."""
     from database import SessionLocal
 
     db = SessionLocal()
@@ -96,9 +97,12 @@ async def _bg_analyze_and_notify(
 
         db.commit()
 
-        # Send email notification — new ticket
+        # Send email notification to the customer — new ticket
         category = ai_data.get("category", "General")
-        sent = await notify_new_ticket(ticket_id, title, customer_name, priority, category)
+        sent = await notify_new_ticket(
+            ticket_id, title, customer_name, priority, category,
+            customer_email=customer_email,
+        )
         db.add(
             NotificationLog(
                 ticket_id=ticket_id,
@@ -110,7 +114,8 @@ async def _bg_analyze_and_notify(
 
         if escalated:
             sent2 = await notify_escalation(
-                ticket_id, title, customer_name, ai_data.get("sentiment")
+                ticket_id, title, customer_name, ai_data.get("sentiment"),
+                customer_email=customer_email,
             )
             db.add(
                 NotificationLog(
@@ -134,6 +139,7 @@ async def _bg_resolution_task(
     description: str,
     customer_name: str,
     comment_data: list,
+    customer_email: str = "",
 ):
     from database import SessionLocal
 
@@ -150,7 +156,10 @@ async def _bg_resolution_task(
 
         db.commit()
 
-        sent = await notify_resolution(ticket_id, title, customer_name, summary)
+        sent = await notify_resolution(
+            ticket_id, title, customer_name, summary,
+            customer_email=customer_email,
+        )
         db.add(
             NotificationLog(
                 ticket_id=ticket_id,
@@ -166,10 +175,15 @@ async def _bg_resolution_task(
         db.close()
 
 
-async def _bg_escalation_task(ticket_id: int, title: str, customer_name: str):
+async def _bg_escalation_task(
+    ticket_id: int, title: str, customer_name: str, customer_email: str = ""
+):
     from database import SessionLocal
 
-    sent = await notify_escalation(ticket_id, title, customer_name)
+    sent = await notify_escalation(
+        ticket_id, title, customer_name,
+        customer_email=customer_email,
+    )
     db = SessionLocal()
     try:
         db.add(
@@ -256,7 +270,7 @@ async def create_ticket(
     )
     db.commit()
 
-    # Fire background AI analysis + Telegram
+    # Fire background AI analysis + email notification to customer
     background_tasks.add_task(
         _bg_analyze_and_notify,
         ticket.id,
@@ -264,6 +278,7 @@ async def create_ticket(
         data.description,
         customer.full_name,
         data.priority,
+        customer.email or "",
     )
 
     return _load_ticket(db, ticket.id)
@@ -333,12 +348,14 @@ async def update_ticket(
         background_tasks.add_task(
             _bg_resolution_task,
             ticket_id, ticket_title, ticket_desc, customer_name, comment_data,
+            ticket.customer.email if ticket.customer else "",
         )
 
     # Escalated to Critical (only if it changed)
     if data.priority == "critical" and old_priority != "critical":
         background_tasks.add_task(
-            _bg_escalation_task, ticket_id, ticket_title, customer_name
+            _bg_escalation_task, ticket_id, ticket_title, customer_name,
+            ticket.customer.email if ticket.customer else "",
         )
 
     db.commit()

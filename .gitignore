@@ -1,22 +1,44 @@
-# Python
+# ── Secrets & Environment ─────────────────────────────────────────
+.env
+.env.local
+.env.*.local
+backend/.env
+
+# ── Python ────────────────────────────────────────────────────────
 __pycache__/
 *.py[cod]
 *.pyo
+*.pyd
 venv/
-.env
+.venv/
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# ── Database ──────────────────────────────────────────────────────
 *.db
 *.sqlite3
+backend/crm.db
 
-# Node
+# ── Node ──────────────────────────────────────────────────────────
 node_modules/
-dist/
+frontend/dist/
 .cache/
 
-# IDE
+# ── IDE ───────────────────────────────────────────────────────────
 .vscode/
 .idea/
 *.swp
-.DS_Store
+*.swo
 
-# Logs
+# ── OS ────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Logs ─────────────────────────────────────────────────────────
 *.log
+logs/

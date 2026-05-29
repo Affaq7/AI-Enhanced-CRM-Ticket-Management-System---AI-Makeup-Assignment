@@ -114,13 +114,13 @@ def _build_html(title: str, color: str, rows: list[tuple[str, str]], footer: str
 
 # ── SMTP send (sync, runs in thread) ─────────────────────────────────────────
 
-def _send_sync(subject: str, html: str) -> bool:
+def _send_sync(subject: str, html: str, recipient_email: str) -> bool:
     """Blocking SMTP send — called via asyncio.to_thread."""
-    if not SMTP_USER or not SMTP_PASSWORD or not NOTIFY_EMAIL:
-        print("[Email] SMTP credentials or NOTIFY_EMAIL not configured — skipping.")
+    if not SMTP_USER or not SMTP_PASSWORD or not recipient_email:
+        print("[Email] SMTP credentials or recipient email not configured — skipping.")
         return False
 
-    recipients = [r.strip() for r in NOTIFY_EMAIL.split(",") if r.strip()]
+    recipients = [r.strip() for r in recipient_email.split(",") if r.strip()]
 
     msg = MIMEMultipart("alternative")
     msg["Subject"] = subject
@@ -142,9 +142,9 @@ def _send_sync(subject: str, html: str) -> bool:
         return False
 
 
-async def send_email(subject: str, html: str) -> bool:
+async def send_email(subject: str, html: str, recipient_email: str) -> bool:
     """Async wrapper — offloads blocking SMTP to a thread."""
-    return await asyncio.to_thread(_send_sync, subject, html)
+    return await asyncio.to_thread(_send_sync, subject, html, recipient_email)
 
 
 # ── Notification functions ────────────────────────────────────────────────────
@@ -155,6 +155,7 @@ async def notify_new_ticket(
     customer_name: str,
     priority: str,
     category: str,
+    customer_email: str = "",
 ) -> bool:
     color = _PRIORITY_COLOR.get(priority, "#6b7280")
     badge = _PRIORITY_BADGE.get(priority, priority.upper())
@@ -170,9 +171,10 @@ async def notify_new_ticket(
         title=f"New Ticket #{ticket_id}: {title}",
         color=color,
         rows=rows,
-        footer=f"Log in to TechServe CRM to view and respond to this ticket.",
+        footer="Your support ticket has been received. Our team will get back to you shortly.",
     )
-    return await send_email(f"[TechServe] New Ticket #{ticket_id} — {title}", html)
+    recipient = customer_email or NOTIFY_EMAIL
+    return await send_email(f"[TechServe] New Ticket #{ticket_id} — {title}", html, recipient)
 
 
 async def notify_escalation(
@@ -180,6 +182,7 @@ async def notify_escalation(
     title: str,
     customer_name: str,
     sentiment: str = None,
+    customer_email: str = "",
 ) -> bool:
     rows = [
         ("Ticket ID",  f"<strong>#{ticket_id}</strong>"),
@@ -197,13 +200,13 @@ async def notify_escalation(
         color="#ef4444",
         rows=rows,
         footer=(
-            "This ticket was automatically escalated to <strong>Critical</strong> priority "
-            "because the AI engine detected <strong>Frustrated</strong> sentiment in the "
-            "customer's message. Immediate agent attention is required."
+            "Your ticket has been escalated to <strong>Critical</strong> priority "
+            "and will receive immediate attention from our support team."
         ),
     )
+    recipient = customer_email or NOTIFY_EMAIL
     return await send_email(
-        f"[TechServe] 🚨 CRITICAL ESCALATION — Ticket #{ticket_id}", html
+        f"[TechServe] 🚨 CRITICAL ESCALATION — Ticket #{ticket_id}", html, recipient
     )
 
 
@@ -212,6 +215,7 @@ async def notify_resolution(
     title: str,
     customer_name: str,
     summary: str = None,
+    customer_email: str = "",
 ) -> bool:
     rows = [
         ("Ticket ID", f"<strong>#{ticket_id}</strong>"),
@@ -224,8 +228,9 @@ async def notify_resolution(
         title=f"✅ Ticket #{ticket_id} Resolved",
         color="#22c55e",
         rows=rows,
-        footer=f"<strong>AI Summary:</strong><br>{summary}" if summary else "",
+        footer=f"<strong>Resolution Summary:</strong><br>{summary}" if summary else "",
     )
+    recipient = customer_email or NOTIFY_EMAIL
     return await send_email(
-        f"[TechServe] ✅ Resolved — Ticket #{ticket_id}: {title}", html
+        f"[TechServe] ✅ Resolved — Ticket #{ticket_id}: {title}", html, recipient
     )
