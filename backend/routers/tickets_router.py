@@ -13,7 +13,7 @@ from schemas import (
     CommentCreate, CommentOut, HistoryOut,
 )
 from services.ai_service import analyze_ticket, summarize_conversation
-from services.telegram_service import notify_new_ticket, notify_escalation, notify_resolution
+from services.email_service import notify_new_ticket, notify_escalation, notify_resolution
 
 router = APIRouter(prefix="/tickets", tags=["Tickets"])
 
@@ -96,13 +96,13 @@ async def _bg_analyze_and_notify(
 
         db.commit()
 
-        # Send Telegram notification — new ticket
+        # Send email notification — new ticket
         category = ai_data.get("category", "General")
         sent = await notify_new_ticket(ticket_id, title, customer_name, priority, category)
         db.add(
             NotificationLog(
                 ticket_id=ticket_id,
-                platform="telegram",
+                platform="email",
                 message=f"New ticket #{ticket_id} notification",
                 status="sent" if sent else "failed",
             )
@@ -115,7 +115,7 @@ async def _bg_analyze_and_notify(
             db.add(
                 NotificationLog(
                     ticket_id=ticket_id,
-                    platform="telegram",
+                    platform="email",
                     message=f"Escalation #{ticket_id}",
                     status="sent" if sent2 else "failed",
                 )
@@ -154,7 +154,7 @@ async def _bg_resolution_task(
         db.add(
             NotificationLog(
                 ticket_id=ticket_id,
-                platform="telegram",
+                platform="email",
                 message=f"Resolution #{ticket_id}",
                 status="sent" if sent else "failed",
             )
@@ -175,7 +175,7 @@ async def _bg_escalation_task(ticket_id: int, title: str, customer_name: str):
         db.add(
             NotificationLog(
                 ticket_id=ticket_id,
-                platform="telegram",
+                platform="email",
                 message=f"Manual escalation #{ticket_id}",
                 status="sent" if sent else "failed",
             )

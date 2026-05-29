@@ -30,7 +30,7 @@
 
 ### 1.1 What Was Built
 
-TechServe CRM is a full-stack, AI-enhanced Customer Relationship Management and Ticket Management System designed to solve the manual, error-prone support workflow at a mid-sized technology company. The system replaces spreadsheets and personal chat accounts with a centralized, intelligent platform that automates ticket categorization, detects customer sentiment, suggests agent responses, and delivers real-time notifications to the team via Telegram.
+TechServe CRM is a full-stack, AI-enhanced Customer Relationship Management and Ticket Management System designed to solve the manual, error-prone support workflow at a mid-sized technology company. The system replaces spreadsheets and personal email threads with a centralized, intelligent platform that automates ticket categorization, detects customer sentiment, suggests agent responses, and delivers real-time email notifications to the team.
 
 The system is built as a production-ready MVP covering all 10 minimum requirements defined in the assignment specification, plus five bonus features.
 
@@ -48,14 +48,14 @@ Gemini Flash offers a generous free tier with no credit card required (suitable 
 **React + Vite over Next.js:**  
 For a client-rendered SPA backed by a separate REST API, Vite's React template provides the fastest development iteration cycle. Next.js server-side rendering overhead is unnecessary when the backend is already a standalone FastAPI service.
 
-**Telegram Bot over Discord/Email:**  
-Telegram Bot setup requires zero infrastructure (no SMTP server, no verified domain), takes under 5 minutes via BotFather, and the Bot API is extremely reliable. The free tier has no rate limits for the volume of a support team.
+**Gmail SMTP over Webhook APIs:**  
+SMTP email was chosen as the notification channel because every support team member already has an email inbox, no additional app installation is required, and email provides a persistent, searchable record of all alerts. Python's stdlib `smtplib` module handles SMTP natively—zero additional dependencies. Gmail's free SMTP service (port 587 + STARTTLS) is used with an App Password for authentication, making setup accessible to any student with a Google account.
 
 ### 1.3 What Differentiates This System
 
-1. **AI Escalation Engine:** Unlike systems where agents manually escalate tickets, TechServe CRM automatically escalates to Critical priority when the AI detects Frustrated sentiment in the ticket description—without any human intervention. An alert is simultaneously sent via Telegram.
+1. **AI Escalation Engine:** Unlike systems where agents manually escalate tickets, TechServe CRM automatically escalates to Critical priority when the AI detects Frustrated sentiment in the ticket description—without any human intervention. A critical escalation email is simultaneously sent to the support team.
 
-2. **Non-blocking AI pipeline:** All AI analysis runs as FastAPI background tasks. Ticket creation returns instantly (< 100ms) to the agent. The AI analysis, category update, and Telegram notification complete asynchronously, then appear when the agent refreshes the ticket detail page.
+2. **Non-blocking AI pipeline:** All AI analysis runs as FastAPI background tasks. Ticket creation returns instantly (< 100ms) to the agent. The AI analysis, category update, and email notification complete asynchronously, then appear when the agent refreshes the ticket detail page.
 
 3. **Four AI features in one workflow:** Categorization, sentiment analysis, reply suggestion, and resolution summary are all integrated into the single ticket lifecycle—not bolted on as separate modules.
 
@@ -96,8 +96,8 @@ Telegram Bot setup requires zero infrastructure (no SMTP server, no verified dom
 │                          └────────┬────────┘                        │
 │                                   │                                 │
 │                          ┌────────▼────────┐                        │
-│                          │ Telegram Service │ ◄── Bot API           │
-│                          │  (async)         │     (HTTP POST)       │
+│                          │ Email Service   │ ◄── Gmail SMTP    │
+│                          │  (async/thread) │     (STARTTLS)    │
 │                          └─────────────────┘                        │
 └─────────────────────────────┬───────────────────────────────────────┘
                                │ SQLAlchemy ORM
@@ -129,19 +129,19 @@ The backend follows a layered architecture: routers handle HTTP concerns, servic
 **Routers:**
 - `auth_router` — `POST /auth/login`, `GET /auth/me`
 - `customers_router` — Full CRUD + `GET /customers/{id}/tickets`
-- `tickets_router` — Full CRUD + `GET/POST /{id}/comments` + `GET /{id}/history`. Ticket creation triggers `BackgroundTasks` for AI analysis and Telegram notification.
+- `tickets_router` — Full CRUD + `GET/POST /{id}/comments` + `GET /{id}/history`. Ticket creation triggers `BackgroundTasks` for AI analysis and email notification.
 - `dashboard_router` — 5 analytics endpoints consumed by the frontend charts
 - `ai_router` — On-demand AI endpoints: `/analyze/{id}`, `/suggest-reply/{id}`, `/summarize/{id}`
 - `users_router` — Agent management (manager-only for write operations)
 
 **Key architectural pattern — Background Tasks:**  
-When a ticket is created via `POST /tickets`, the FastAPI response is returned immediately with `status: "open"` and `category: "General"`. FastAPI then runs `_bg_analyze_and_notify()` asynchronously, which calls Gemini, updates the ticket category in the database, runs the AI escalation check, and sends Telegram notifications—all without the client waiting.
+When a ticket is created via `POST /tickets`, the FastAPI response is returned immediately with `status: "open"` and `category: "General"`. FastAPI then runs `_bg_analyze_and_notify()` asynchronously, which calls Gemini, updates the ticket category in the database, runs the AI escalation check, and sends email notifications—all without the client waiting.
 
 #### AI Service (`services/ai_service.py`)
 All four AI operations call Gemini 1.5 Flash via `httpx.AsyncClient`. The `responseMimeType: "application/json"` generation config parameter forces the model to output valid JSON, eliminating the need for post-processing. Each function has a hardcoded fallback dict/string that is returned if the API key is missing or the call fails, ensuring the application never crashes due to AI unavailability.
 
-#### Telegram Service (`services/telegram_service.py`)
-Sends HTML-formatted messages to a configured Telegram chat using `POST https://api.telegram.org/bot{TOKEN}/sendMessage`. Three notification types are implemented: new ticket creation, critical escalation, and ticket resolution (with AI summary). Each notification call is wrapped in a try/except and logs failures without propagating exceptions to the main application.
+#### Email Service (`services/email_service.py`)
+Sends HTML-formatted emails via Gmail SMTP using Python's stdlib `smtplib` and `email.mime` modules — zero extra dependencies. Because `smtplib` is blocking, the send operation runs inside `asyncio.to_thread()`, making it compatible with FastAPI's async event loop. Three notification types are implemented: new ticket creation, critical escalation, and ticket resolution (with AI summary). Each call is wrapped in a try/except and returns a boolean success flag; failures are logged without propagating exceptions.
 
 #### Database (`database.py` + SQLAlchemy 2.0)
 Uses SQLAlchemy's `DeclarativeBase` with a `SessionLocal` factory. A SQLite event listener enables `PRAGMA foreign_keys=ON` so SQLAlchemy cascade deletes (on `TicketComment`, `TicketHistory`, `AIMetadata`, `NotificationLog`) enforce referential integrity at the database level.
@@ -204,7 +204,7 @@ Uses SQLAlchemy's `DeclarativeBase` with a `SessionLocal` factory. A SQLite even
 | `ai_metadata` | One-to-one with tickets. Stores all AI outputs | `ticket_id → tickets.id` (unique) |
 | `ticket_comments` | Public comments and internal notes on tickets | `ticket_id`, `agent_id` |
 | `ticket_history` | Immutable changelog for every field change | `ticket_id`, `agent_id` |
-| `notification_logs` | Audit trail for all Telegram messages sent | `ticket_id → tickets.id` |
+| `notification_logs` | Audit trail for all email notifications sent | `ticket_id → tickets.id` |
 
 ### 3.3 Design Decisions
 
@@ -280,12 +280,12 @@ The sentiment score (0.0–1.0) is displayed in the AI Panel as a colored progre
 if ai_data.get("sentiment") == "Frustrated" and ticket.priority != "critical":
     ticket.priority = "critical"
     # Log to ticket_history
-    # Send Telegram escalation alert
+    # Send critical escalation email
 ```
 
 This rule executes within the same background task as categorization, so the escalation happens seconds after ticket creation with no agent action required.
 
-**Example:** A ticket created with priority `"high"` containing the description *"This is completely unacceptable! I've been waiting for 3 days and nobody has responded..."* will be automatically escalated to `"critical"` and an urgent Telegram alert sent to the agents' channel.
+**Example:** A ticket created with priority `"high"` containing the description *"This is completely unacceptable! I've been waiting for 3 days and nobody has responded..."* will be automatically escalated to `"critical"` and an urgent escalation email sent to the configured team inbox.
 
 ### 4.5 Feature 3: AI-Generated Reply Suggestion
 
@@ -329,7 +329,7 @@ Original Description: {description}
 Conversation: [Agent]: ... [Agent]: ...
 ```
 
-The summary is stored in `ai_metadata.ai_summary` and displayed in the AI Panel's "Resolution Summary" section. A Telegram notification includes the summary text.
+The summary is stored in `ai_metadata.ai_summary` and displayed in the AI Panel's "Resolution Summary" section. A resolution email notification including this summary is sent to the team inbox.
 
 ### 4.7 Error Handling
 
@@ -344,76 +344,72 @@ This guarantees the application never crashes or shows an error to the end user 
 
 ## 5. Messaging Integration
 
-### 5.1 Platform: Telegram Bot API
+### 5.1 Platform: Email via Gmail SMTP
 
-**Why Telegram:** Zero infrastructure overhead (no SMTP server, no domain verification), BotFather setup in under 5 minutes, a reliable HTTP API with excellent uptime, and HTML message formatting support for rich notifications.
+**Why Email:** Email is the universal communication standard—every team member has an inbox with no additional app installation required. SMTP via Gmail is freely available, supports HTML-rich formatting, and Python's standard library provides native SMTP support through `smtplib` with zero additional pip dependencies. Email also creates a persistent, searchable audit trail of all alerts in the team's inbox.
 
 ### 5.2 Setup
 
-1. Message `@BotFather` on Telegram → send `/newbot`
-2. Follow prompts to name the bot → receive bot token
-3. Add the bot to a group or channel as an administrator
-4. Retrieve the chat ID from `https://api.telegram.org/bot<TOKEN>/getUpdates`
-5. Set `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` in `backend/.env`
+1. **Enable 2-Step Verification** on your Google Account (required for App Passwords)
+2. Go to [myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords)
+3. Select **Mail** → **Other (Custom name)** → enter `TechServe CRM` → click **Generate**
+4. Copy the **16-character App Password** (shown once only)
+5. Set the following in `backend/.env`:
+   ```
+   SMTP_HOST=smtp.gmail.com
+   SMTP_PORT=587
+   SMTP_USER=your.email@gmail.com
+   SMTP_PASSWORD=xxxx xxxx xxxx xxxx
+   NOTIFY_EMAIL=team@yourcompany.com
+   ```
+
+`NOTIFY_EMAIL` accepts multiple recipients (comma-separated), so the entire support team can receive alerts in one configuration line.
 
 ### 5.3 Implementation
 
-All notifications call a single `send_message(text: str) → bool` function:
+The service is implemented in `services/email_service.py` using only Python standard library modules:
+- `smtplib` — SMTP client
+- `ssl` — TLS context for STARTTLS
+- `email.mime.multipart` / `email.mime.text` — MIME construction
+- `asyncio.to_thread` — offloads blocking SMTP I/O to a thread pool
+
+The core send function:
 
 ```python
-async def send_message(text: str) -> bool:
-    payload = {
-        "chat_id": TELEGRAM_CHAT_ID,
-        "text": text,
-        "parse_mode": "HTML",
-    }
-    async with httpx.AsyncClient(timeout=10.0) as client:
-        resp = await client.post(
-            f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage",
-            json=payload
-        )
-        return resp.status_code == 200
+async def send_email(subject: str, html: str) -> bool:
+    """Async wrapper — offloads blocking SMTP to a thread."""
+    return await asyncio.to_thread(_send_sync, subject, html)
+
+def _send_sync(subject: str, html: str) -> bool:
+    context = ssl.create_default_context()
+    with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
+        server.ehlo()
+        server.starttls(context=context)
+        server.login(SMTP_USER, SMTP_PASSWORD)
+        server.sendmail(SMTP_USER, recipients, msg.as_string())
+    return True
 ```
 
-Three notification types are implemented:
+Three notification types are implemented, each with a purpose-built HTML email template:
 
-**New Ticket Notification:**
-```
-🎫 New Ticket Created — #42
+**New Ticket Email** — Subject: `[TechServe] New Ticket #42 — Cannot login to dashboard`
 
-📌 Cannot login to dashboard
-👤 Customer: Jane Doe
-🟠 Priority: HIGH
-📁 Category: Technical
-🕐 2026-05-28 14:32 UTC
-```
+The email body is a responsive, table-based HTML layout with:
+- Colored header bar (color matches priority: green/blue/orange/red)
+- Ticket ID, title, customer name, priority badge, AI category, and timestamp
+- Footer with login prompt
 
-**Critical Escalation Alert:**
-```
-🚨 CRITICAL ESCALATION — #43
+**Critical Escalation Email** — Subject: `[TechServe] 🚨 CRITICAL ESCALATION — Ticket #43`
 
-📌 Billing issue — charged twice
-👤 Customer: Bob Smith
-🔴 Priority auto-escalated to: CRITICAL
-😡 AI Detected Sentiment: Frustrated
-🕐 2026-05-28 14:35 UTC
+- Red header bar
+- Auto-escalation notice with AI-detected sentiment label
+- Explanatory footer: *"This ticket was automatically escalated... Immediate agent attention is required."*
 
-⚠️ Immediate attention required!
-```
+**Resolution Email** — Subject: `[TechServe] ✅ Resolved — Ticket #42: Cannot login to dashboard`
 
-**Ticket Resolved Notification:**
-```
-✅ Ticket Resolved — #42
-
-📌 Cannot login to dashboard
-👤 Customer: Jane Doe
-🕐 2026-05-28 15:10 UTC
-
-📋 AI Summary:
-The customer was unable to log in due to a cached browser session.
-The support team advised clearing cookies, which resolved the issue
-immediately. The customer confirmed successful login.
-```
+- Green header bar
+- Resolution timestamp
+- AI-generated conversation summary in the footer
 
 ### 5.4 Notification Results Storage
 
@@ -422,17 +418,19 @@ Every notification attempt (successful or failed) is recorded in `notification_l
 | Field | Value |
 |-------|-------|
 | `ticket_id` | FK reference to ticket |
-| `platform` | `"telegram"` |
+| `platform` | `"email"` |
 | `message` | Human-readable description |
 | `status` | `"sent"` or `"failed"` |
 | `sent_at` | UTC timestamp |
 
-This provides a full audit trail of all communications.
+This provides a full audit trail of all communications regardless of delivery success.
 
-### 5.5 Challenges
+### 5.5 Design Decisions
 
-- **Chat ID retrieval:** The Telegram Bot API returns chat IDs in the `getUpdates` response only after the bot has received at least one message. The workaround is to send any message to the group after adding the bot, then poll `getUpdates`.
-- **Group vs Channel:** For channels, the bot must be an administrator. For groups, it only needs to be a member. The `chat_id` is negative for groups (e.g., `-1001234567890`) and positive for private chats.
+- **`asyncio.to_thread()` over `aiosmtplib`:** The stdlib `smtplib` is synchronous. Rather than adding the `aiosmtplib` dependency, `asyncio.to_thread()` (Python 3.9+) runs the blocking call in a thread pool — identical performance for low-frequency notifications, zero extra packages.
+- **HTML email over plain text:** HTML allows priority-color-coded headers, structured tables, and a professional branded appearance that improves signal clarity for the support team.
+- **App Password over OAuth2:** OAuth2 SMTP access requires a Google Cloud project and OAuth consent screen approval. App Passwords require only a Google account with 2-Step Verification — setup in under 5 minutes, suitable for a course project.
+- **Comma-separated `NOTIFY_EMAIL`:** Allows alerting multiple team members (e.g., all agents + manager) with a single environment variable, without modifying code.
 
 ---
 
@@ -454,14 +452,14 @@ This provides a full audit trail of all communications.
 | 8 | **AI Reply Suggestion** | Click "Generate" in Draft Reply section of AI Panel |
 | 9 | **Comment Thread** | Add a comment to a ticket |
 | 10 | **History Timeline** | Scroll to History section on ticket detail |
-| 11 | **Telegram Notification** | Screenshot of received Telegram message on phone/desktop |
+| 11 | **Email Notification** | Screenshot of received email in team inbox (new ticket, escalation, or resolution) |
 | 12 | **Agents Page (Manager)** | Navigate to `/agents` as Manager |
 | 13 | **API Documentation** | Navigate to `http://localhost:8000/docs` |
 
 ### Screenshot Notes
 
 - Use browser window at 1440×900px for best presentation
-- For the Telegram screenshot, show it on your phone or Telegram Desktop
+- For the email notification screenshot, show the received HTML email in Gmail (desktop view)
 - Include screenshots that show the AI panel AFTER analysis completes (category badge + sentiment bar populated)
 - Show at least one ticket with "Critical" priority to demonstrate the escalation engine
 
@@ -503,10 +501,12 @@ Defining async functions inside a request handler and capturing SQLAlchemy model
 
 ---
 
-**Challenge 5: Telegram Chat ID Discovery**  
-The Telegram Bot API does not expose the chat ID in BotFather during setup. The `getUpdates` endpoint only returns updates if the bot has received at least one message.
+**Challenge 5: SMTP Blocking I/O in Async Context**  
+Python's stdlib `smtplib` is synchronous. Calling it directly inside an `async def` function would block the FastAPI event loop, degrading request handling performance during email sends.
 
-**Solution:** Documented in the README: after adding the bot to a group, send any message to the group, then call `https://api.telegram.org/bot<TOKEN>/getUpdates` to find the `chat.id` field in the response.
+**Solution:** Used `asyncio.to_thread(_send_sync, subject, html)` to execute the blocking SMTP operations in a separate thread pool thread, keeping the event loop free. This is the recommended Python 3.9+ pattern for wrapping sync code in async contexts.
+
+**Lesson:** Never call blocking I/O (file, network, DB without async driver) directly in an `async def` function. Always offload via `asyncio.to_thread()` or use a dedicated async library.
 
 ### 7.2 Design Learnings
 
@@ -556,16 +556,19 @@ The Telegram Bot API does not expose the chat ID in BotFather during setup. The 
 3. **Pydantic v2 Documentation** — https://docs.pydantic.dev/latest/
 4. **Python-JOSE Documentation** — https://python-jose.readthedocs.io/
 5. **Google Gemini API Reference** — https://ai.google.dev/api/generate-content
-6. **Telegram Bot API Documentation** — https://core.telegram.org/bots/api
-7. **React Router v6 Documentation** — https://reactrouter.com/en/main
-8. **Chart.js Documentation** — https://www.chartjs.org/docs/latest/
-9. **RFC 7519: JSON Web Token (JWT)** — *IETF* — https://datatracker.ietf.org/doc/html/rfc7519
-10. **Vite Documentation** — https://vitejs.dev/guide/
-11. **bcrypt / passlib Compatibility Issue** — https://github.com/pyca/bcrypt/issues/684
-12. **httpx Async HTTP Client** — https://www.python-httpx.org/
-13. **Lucide React Icons** — https://lucide.dev/icons/
-14. **Inter Typeface** — *Google Fonts* — https://fonts.google.com/specimen/Inter
-15. **OWASP Authentication Cheat Sheet** — https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html
+6. **Python smtplib Documentation** — https://docs.python.org/3/library/smtplib.html
+7. **Python email.mime Documentation** — https://docs.python.org/3/library/email.mime.html
+8. **Google App Passwords Setup** — https://support.google.com/accounts/answer/185833
+9. **asyncio.to_thread Documentation** — https://docs.python.org/3/library/asyncio-task.html#asyncio.to_thread
+10. **React Router v6 Documentation** — https://reactrouter.com/en/main
+11. **Chart.js Documentation** — https://www.chartjs.org/docs/latest/
+12. **RFC 7519: JSON Web Token (JWT)** — *IETF* — https://datatracker.ietf.org/doc/html/rfc7519
+13. **Vite Documentation** — https://vitejs.dev/guide/
+14. **bcrypt / passlib Compatibility Issue** — https://github.com/pyca/bcrypt/issues/684
+15. **httpx Async HTTP Client** — https://www.python-httpx.org/
+16. **Lucide React Icons** — https://lucide.dev/icons/
+17. **Inter Typeface** — *Google Fonts* — https://fonts.google.com/specimen/Inter
+18. **OWASP Authentication Cheat Sheet** — https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html
 
 ---
 

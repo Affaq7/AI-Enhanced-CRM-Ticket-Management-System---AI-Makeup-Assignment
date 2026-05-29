@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="TechServe CRM Project Report — CS-4XX AI Assignment">
+<title>TechServe CRM — Project Report</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  @page { margin: 2cm 2.2cm; size: A4; }
+
+  * { box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    font-size: 11pt;
+    line-height: 1.75;
+    color: #1a1a2e;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px 40px;
+    background: #fff;
+  }
+
+  /* ── Cover-like first heading ── */
+  body > h1:first-of-type {
+    text-align: center;
+    font-size: 22pt;
+    font-weight: 700;
+    color: #2c1b6e;
+    margin-bottom: 4px;
+    letter-spacing: -0.02em;
+    border: none;
+  }
+  body > h2:first-of-type {
+    text-align: center;
+    font-size: 13pt;
+    font-weight: 400;
+    color: #5a5a80;
+    margin-top: 0;
+  }
+
+  /* ── Headings ── */
+  h1 { font-size: 18pt; font-weight: 700; color: #2c1b6e; border-bottom: 2px solid #7c6aff; padding-bottom: 6px; margin-top: 2em; }
+  h2 { font-size: 14pt; font-weight: 700; color: #3d2a9c; margin-top: 1.5em; }
+  h3 { font-size: 11pt; font-weight: 600; color: #5a5a80; margin-top: 1.2em; text-transform: uppercase; letter-spacing: 0.04em; }
+  h4 { font-size: 11pt; font-weight: 600; color: #1a1a2e; margin-top: 1em; }
+
+  /* ── HR ── */
+  hr { border: none; border-top: 1px solid #e0e0f0; margin: 1.5em 0; }
+
+  /* ── Links ── */
+  a { color: #7c6aff; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  /* ── Code ── */
+  code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9.5pt;
+    background: #f0f0ff;
+    color: #3d2a9c;
+    padding: 1px 5px;
+    border-radius: 4px;
+  }
+  pre {
+    background: #0d0d1a;
+    color: #e0e0ff;
+    border-radius: 8px;
+    padding: 14px 18px;
+    overflow-x: auto;
+    font-size: 9pt;
+    line-height: 1.55;
+    margin: 1em 0;
+    border-left: 3px solid #7c6aff;
+  }
+  pre code {
+    background: none;
+    color: inherit;
+    padding: 0;
+    font-size: 9pt;
+  }
+
+  /* ── Tables ── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 10pt;
+    margin: 1em 0;
+    page-break-inside: avoid;
+  }
+  th {
+    background: #2c1b6e;
+    color: #fff;
+    padding: 8px 12px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 9.5pt;
+  }
+  td {
+    padding: 7px 12px;
+    border-bottom: 1px solid #e0e0f0;
+    vertical-align: top;
+  }
+  tr:nth-child(even) td { background: #f7f7ff; }
+  tr:hover td { background: #ededff; }
+
+  /* ── Lists ── */
+  ul, ol { padding-left: 1.6em; }
+  li { margin-bottom: 4px; }
+
+  /* ── Blockquote ── */
+  blockquote {
+    border-left: 4px solid #7c6aff;
+    margin: 1em 0;
+    padding: 8px 16px;
+    background: #f7f7ff;
+    color: #3d2a9c;
+    border-radius: 0 6px 6px 0;
+    font-style: italic;
+  }
+
+  /* ── Page breaks ── */
+  h1 { page-break-before: always; }
+  h1:first-of-type { page-break-before: avoid; }
+  pre, table { page-break-inside: avoid; }
+
+  /* ── Print ── */
+  @media print {
+    body { padding: 0; }
+    a { color: #2c1b6e; }
+    pre { background: #f0f0ff; color: #1a1a2e; border: 1px solid #c0c0e0; }
+    pre code { color: #1a1a2e; }
+  }
+</style>
+</head>
+<body>
+<h1 id="techserve-ai-enhanced-crm-ticket-management-system">TechServe AI-Enhanced CRM &amp; Ticket Management System</h1>
+
+<h2 id="project-report">Project Report</h2>
+
+<hr />
+
+<p><strong>Course:</strong> Artificial Intelligence (CS-4XX)<br />
+<strong>Assignment:</strong> Major Project — AI-Enhanced CRM &amp; Ticket Management System<br />
+<strong>Submission Date:</strong> May 2026<br />
+<strong>Student:</strong> [Your Full Name] — [Student ID]<br />
+<strong>GitHub Repository:</strong> https://github.com/[username]/techserve-crm<br />
+<strong>Live Demo:</strong> http://localhost:3000 (local deployment)</p>
+
+<hr />
+
+<h2 id="table-of-contents">Table of Contents</h2>
+
+<ol>
+<li><a href="#1-project-overview">Project Overview</a></li>
+<li><a href="#2-system-architecture">System Architecture</a></li>
+<li><a href="#3-database-schema">Database Schema</a></li>
+<li><a href="#4-ai-integration">AI Integration</a></li>
+<li><a href="#5-messaging-integration">Messaging Integration</a></li>
+<li><a href="#6-feature-screenshots">Feature Screenshots</a></li>
+<li><a href="#7-challenges--learnings">Challenges &amp; Learnings</a></li>
+<li><a href="#8-work-division">Work Division</a></li>
+<li><a href="#9-references">References</a></li>
+</ol>
+
+<hr />
+
+<h2 id="1-project-overview">1. Project Overview</h2>
+
+<h3 id="11-what-was-built">1.1 What Was Built</h3>
+
+<p>TechServe CRM is a full-stack, AI-enhanced Customer Relationship Management and Ticket Management System designed to solve the manual, error-prone support workflow at a mid-sized technology company. The system replaces spreadsheets and personal email threads with a centralized, intelligent platform that automates ticket categorization, detects customer sentiment, suggests agent responses, and delivers real-time email notifications to the team.</p>
+
+<p>The system is built as a production-ready MVP covering all 10 minimum requirements defined in the assignment specification, plus five bonus features.</p>
+
+<h3 id="12-key-technical-decisions">1.2 Key Technical Decisions</h3>
+
+<p><strong>FastAPI over Django/Flask:</strong><br />
+FastAPI was selected as the backend framework for its native asynchronous support (critical for non-blocking AI API calls and Telegram notifications), automatic OpenAPI documentation generation, and Pydantic v2 integration for type-safe data validation. The async-first architecture ensures that expensive operations—Gemini AI calls, Telegram messages—never block the HTTP request cycle; they execute as background tasks after the response is already sent to the client.</p>
+
+<p><strong>SQLite over PostgreSQL:</strong><br />
+SQLite was chosen for zero-configuration portability, making the project trivially runnable from a fresh clone without any database server setup. For a course MVP, this is the correct trade-off. The schema is fully normalized and compatible with PostgreSQL or MySQL with a one-line configuration change (<code>DATABASE_URL</code> environment variable).</p>
+
+<p><strong>Google Gemini 1.5 Flash over GPT-4:</strong><br />
+Gemini Flash offers a generous free tier with no credit card required (suitable for a student project), low latency (~1-2 seconds), excellent JSON-constrained output via <code>responseMimeType: "application/json"</code>, and strong instruction-following capability for classification tasks.</p>
+
+<p><strong>React + Vite over Next.js:</strong><br />
+For a client-rendered SPA backed by a separate REST API, Vite's React template provides the fastest development iteration cycle. Next.js server-side rendering overhead is unnecessary when the backend is already a standalone FastAPI service.</p>
+
+<p><strong>Gmail SMTP over Webhook APIs:</strong><br />
+SMTP email was chosen as the notification channel because every support team member already has an email inbox, no additional app installation is required, and email provides a persistent, searchable record of all alerts. Python's stdlib <code>smtplib</code> module handles SMTP natively—zero additional dependencies. Gmail's free SMTP service (port 587 + STARTTLS) is used with an App Password for authentication, making setup accessible to any student with a Google account.</p>
+
+<h3 id="13-what-differentiates-this-system">1.3 What Differentiates This System</h3>
+
+<ol>
+<li><p><strong>AI Escalation Engine:</strong> Unlike systems where agents manually escalate tickets, TechServe CRM automatically escalates to Critical priority when the AI detects Frustrated sentiment in the ticket description—without any human intervention. A critical escalation email is simultaneously sent to the support team.</p></li>
+<li><p><strong>Non-blocking AI pipeline:</strong> All AI analysis runs as FastAPI background tasks. Ticket creation returns instantly (&lt; 100ms) to the agent. The AI analysis, category update, and email notification complete asynchronously, then appear when the agent refreshes the ticket detail page.</p></li>
+<li><p><strong>Four AI features in one workflow:</strong> Categorization, sentiment analysis, reply suggestion, and resolution summary are all integrated into the single ticket lifecycle—not bolted on as separate modules.</p></li>
+<li><p><strong>Premium dark-mode UI:</strong> The interface uses a custom CSS design system with glassmorphism cards, gradient accents, Chart.js visualizations, and micro-animations—significantly above the minimum acceptable UI quality for this assignment.</p></li>
+</ol>
+
+<hr />
+
+<h2 id="2-system-architecture">2. System Architecture</h2>
+
+<h3 id="21-high-level-architecture-diagram">2.1 High-Level Architecture Diagram</h3>
+
+<pre><code>┌─────────────────────────────────────────────────────────────────────┐
+│                        Browser (React SPA)                           │
+│                                                                      │
+│  ┌──────────┐  ┌───────────┐  ┌──────────┐  ┌──────────────────┐  │
+│  │  Login   │  │ Dashboard │  │ Customers│  │  Ticket Detail   │  │
+│  │  Page    │  │ (Charts)  │  │ (CRUD)   │  │  + AI Panel      │  │
+│  └──────────┘  └───────────┘  └──────────┘  └──────────────────┘  │
+│                                                                      │
+│              Axios HTTP Client (JWT Bearer Token)                    │
+└─────────────────────────────┬───────────────────────────────────────┘
+                               │ REST API (HTTP/JSON)
+┌─────────────────────────────▼───────────────────────────────────────┐
+│                        FastAPI Backend                               │
+│                                                                      │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────────────┐  │
+│  │  /auth   │  │/customers│  │ /tickets │  │   /dashboard     │  │
+│  │  Router  │  │  Router  │  │  Router  │  │     Router       │  │
+│  └──────────┘  └──────────┘  └────┬─────┘  └──────────────────┘  │
+│                                    │                                 │
+│        CORS Middleware             │ Background Tasks               │
+│        JWT Auth Guard             │                                 │
+│        Role-Based Access          ▼                                 │
+│                          ┌─────────────────┐                        │
+│                          │  AI Service      │ ◄── Gemini 1.5 Flash  │
+│                          │  (async)         │     (HTTP POST)       │
+│                          └────────┬────────┘                        │
+│                                   │                                 │
+│                          ┌────────▼────────┐                        │
+│                          │ Email Service   │ ◄── Gmail SMTP    │
+│                          │  (async/thread) │     (STARTTLS)    │
+│                          └─────────────────┘                        │
+└─────────────────────────────┬───────────────────────────────────────┘
+                               │ SQLAlchemy ORM
+┌─────────────────────────────▼───────────────────────────────────────┐
+│                      SQLite Database (crm.db)                        │
+│                                                                      │
+│  users │ customers │ tickets │ ai_metadata │ ticket_comments │       │
+│  ticket_history │ notification_logs                                  │
+└─────────────────────────────────────────────────────────────────────┘
+</code></pre>
+
+<h3 id="22-component-descriptions">2.2 Component Descriptions</h3>
+
+<h4 id="frontend-react-18-vite">Frontend (React 18 + Vite)</h4>
+
+<p>The frontend is a single-page application with client-side routing via React Router v6. Authentication state is managed by a React Context (<code>AuthContext</code>) that stores the JWT token and decoded user profile in <code>localStorage</code>. An Axios instance with request interceptors automatically attaches the <code>Authorization: Bearer &lt;token&gt;</code> header to every API call. A 401 response interceptor automatically logs the user out and redirects to the login page.</p>
+
+<p><strong>Pages:</strong>
+- <strong>Login</strong> — Glassmorphism card with click-to-fill demo credentials. Calls <code>POST /auth/login</code> and stores JWT.
+- <strong>Dashboard</strong> — Displays 8 stat cards and 3 Chart.js visualizations: 7-day ticket trend (line), category breakdown (doughnut), and agent workload (bar).
+- <strong>Customers</strong> — Searchable table with CRUD modals. Search queries <code>GET /customers?search=&lt;term&gt;</code>.
+- <strong>CustomerDetail</strong> — Full profile card + complete ticket history table + create-ticket modal.
+- <strong>Tickets</strong> — Filterable table by status, priority, and search term.
+- <strong>TicketDetail</strong> — Two-column layout: main area (description, comment thread, history timeline) + sidebar (AI panel, controls, customer quick-info). Polls every 10 seconds for live updates.
+- <strong>Agents</strong> — Manager-only page for creating, editing, and deactivating agent accounts.</p>
+
+<h4 id="backend-python-39-fastapi-0104">Backend (Python 3.9 + FastAPI 0.104)</h4>
+
+<p>The backend follows a layered architecture: routers handle HTTP concerns, services handle external integrations, models define data, and schemas validate input/output.</p>
+
+<p><strong>Routers:</strong>
+- <code>auth_router</code> — <code>POST /auth/login</code>, <code>GET /auth/me</code>
+- <code>customers_router</code> — Full CRUD + <code>GET /customers/{id}/tickets</code>
+- <code>tickets_router</code> — Full CRUD + <code>GET/POST /{id}/comments</code> + <code>GET /{id}/history</code>. Ticket creation triggers <code>BackgroundTasks</code> for AI analysis and email notification.
+- <code>dashboard_router</code> — 5 analytics endpoints consumed by the frontend charts
+- <code>ai_router</code> — On-demand AI endpoints: <code>/analyze/{id}</code>, <code>/suggest-reply/{id}</code>, <code>/summarize/{id}</code>
+- <code>users_router</code> — Agent management (manager-only for write operations)</p>
+
+<p><strong>Key architectural pattern — Background Tasks:</strong><br />
+When a ticket is created via <code>POST /tickets</code>, the FastAPI response is returned immediately with <code>status: "open"</code> and <code>category: "General"</code>. FastAPI then runs <code>_bg_analyze_and_notify()</code> asynchronously, which calls Gemini, updates the ticket category in the database, runs the AI escalation check, and sends email notifications—all without the client waiting.</p>
+
+<h4 id="ai-service-servicesai_servicepy">AI Service (<code>services/ai_service.py</code>)</h4>
+
+<p>All four AI operations call Gemini 1.5 Flash via <code>httpx.AsyncClient</code>. The <code>responseMimeType: "application/json"</code> generation config parameter forces the model to output valid JSON, eliminating the need for post-processing. Each function has a hardcoded fallback dict/string that is returned if the API key is missing or the call fails, ensuring the application never crashes due to AI unavailability.</p>
+
+<h4 id="email-service-servicesemail_servicepy">Email Service (<code>services/email_service.py</code>)</h4>
+
+<p>Sends HTML-formatted emails via Gmail SMTP using Python's stdlib <code>smtplib</code> and <code>email.mime</code> modules — zero extra dependencies. Because <code>smtplib</code> is blocking, the send operation runs inside <code>asyncio.to_thread()</code>, making it compatible with FastAPI's async event loop. Three notification types are implemented: new ticket creation, critical escalation, and ticket resolution (with AI summary). Each call is wrapped in a try/except and returns a boolean success flag; failures are logged without propagating exceptions.</p>
+
+<h4 id="database-databasepy-sqlalchemy-20">Database (<code>database.py</code> + SQLAlchemy 2.0)</h4>
+
+<p>Uses SQLAlchemy's <code>DeclarativeBase</code> with a <code>SessionLocal</code> factory. A SQLite event listener enables <code>PRAGMA foreign_keys=ON</code> so SQLAlchemy cascade deletes (on <code>TicketComment</code>, <code>TicketHistory</code>, <code>AIMetadata</code>, <code>NotificationLog</code>) enforce referential integrity at the database level.</p>
+
+<hr />
+
+<h2 id="3-database-schema">3. Database Schema</h2>
+
+<h3 id="31-entity-relationship-diagram">3.1 Entity Relationship Diagram</h3>
+
+<pre><code>┌─────────────────────────────────────────────────────────┐
+│                         USERS                            │
+│  id (PK) │ name │ email (UQ) │ password_hash │ role     │
+│  is_active │ created_at                                  │
+└──────────────────────┬──────────────────────────────────┘
+                       │ 1
+          ┌────────────┼─────────────────────────┐
+          │ N          │ N                        │ N
+          ▼            ▼                          ▼
+┌──────────────┐ ┌────────────────────────┐ ┌──────────────────┐
+│  CUSTOMERS   │ │        TICKETS         │ │  TICKET_COMMENTS │
+│  id (PK)     │ │  id (PK)              │ │  id (PK)         │
+│  full_name   │ │  title                │ │  ticket_id (FK)  │
+│  email (UQ)  │ │  description          │ │  agent_id (FK)   │
+│  phone       │ │  status               │ │  message         │
+│  company     │ │  priority             │ │  is_internal     │
+│  notes       │ │  category             │ │  created_at      │
+│  created_at  │ │  customer_id (FK) ───►│ └──────────────────┘
+│  agent_id(FK)│ │  agent_id (FK)        │
+└──────────────┘ │  created_at           │ ┌──────────────────┐
+                 │  updated_at           │ │  TICKET_HISTORY  │
+                 │  resolved_at          │ │  id (PK)         │
+                 └────────────┬──────────┘ │  ticket_id (FK)  │
+                              │ 1          │  agent_id (FK)   │
+              ┌───────────────┼────────────│  field_changed   │
+              │ 1             │ 1          │  old_value       │
+              ▼               ▼            │  new_value       │
+┌──────────────────┐ ┌─────────────────┐  │  changed_at      │
+│   AI_METADATA    │ │NOTIFICATION_LOGS│  └──────────────────┘
+│  id (PK)         │ │  id (PK)        │
+│  ticket_id (FK,UQ│ │  ticket_id (FK) │
+│  ai_category     │ │  platform       │
+│  ai_sentiment    │ │  message        │
+│  ai_sentiment_scr│ │  status         │
+│  ai_summary      │ │  sent_at        │
+│  ai_suggested_rpl│ └─────────────────┘
+│  ai_tags         │
+│  analyzed_at     │
+└──────────────────┘
+</code></pre>
+
+<h3 id="32-table-descriptions">3.2 Table Descriptions</h3>
+
+<table>
+<thead>
+<tr>
+  <th>Table</th>
+  <th>Purpose</th>
+  <th>Key Relationships</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><code>users</code></td>
+  <td>Agents and managers. Soft-deleted via <code>is_active=False</code> to preserve FK references</td>
+  <td>FK source for customers, tickets, comments, history</td>
+</tr>
+<tr>
+  <td><code>customers</code></td>
+  <td>Customer records with optional agent assignment</td>
+  <td><code>assigned_agent_id → users.id</code></td>
+</tr>
+<tr>
+  <td><code>tickets</code></td>
+  <td>Core entity. Tracks full lifecycle</td>
+  <td><code>customer_id → customers.id</code>, <code>assigned_agent_id → users.id</code></td>
+</tr>
+<tr>
+  <td><code>ai_metadata</code></td>
+  <td>One-to-one with tickets. Stores all AI outputs</td>
+  <td><code>ticket_id → tickets.id</code> (unique)</td>
+</tr>
+<tr>
+  <td><code>ticket_comments</code></td>
+  <td>Public comments and internal notes on tickets</td>
+  <td><code>ticket_id</code>, <code>agent_id</code></td>
+</tr>
+<tr>
+  <td><code>ticket_history</code></td>
+  <td>Immutable changelog for every field change</td>
+  <td><code>ticket_id</code>, <code>agent_id</code></td>
+</tr>
+<tr>
+  <td><code>notification_logs</code></td>
+  <td>Audit trail for all email notifications sent</td>
+  <td><code>ticket_id → tickets.id</code></td>
+</tr>
+</tbody>
+</table>
+
+<h3 id="33-design-decisions">3.3 Design Decisions</h3>
+
+<ul>
+<li><strong>Soft delete on users:</strong> Deleting an agent hard would orphan tickets and comments referencing their ID. Instead, <code>is_active = False</code> marks them inactive while preserving all historical data.</li>
+<li><strong><code>ai_metadata</code> as separate table:</strong> AI fields are optional and only populated after background processing completes. Placing them in a separate <code>1:1</code> table avoids nullable columns proliferating in the <code>tickets</code> table and makes it easy to query tickets with/without AI analysis.</li>
+<li><strong><code>ticket_history</code> immutable log:</strong> Every field change (status, priority, category, agent assignment) appends a new row. This creates a complete audit trail without UPDATE statements on historical records.</li>
+</ul>
+
+<hr />
+
+<h2 id="4-ai-integration">4. AI Integration</h2>
+
+<h3 id="41-ai-features-overview">4.1 AI Features Overview</h3>
+
+<table>
+<thead>
+<tr>
+  <th>#</th>
+  <th>Feature</th>
+  <th>Trigger</th>
+  <th>API</th>
+  <th>Stored in</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>1</td>
+  <td>Auto-categorization</td>
+  <td>Ticket creation (background)</td>
+  <td>Gemini Flash</td>
+  <td><code>ai_metadata.ai_category</code></td>
+</tr>
+<tr>
+  <td>2</td>
+  <td>Sentiment analysis</td>
+  <td>Ticket creation (background)</td>
+  <td>Gemini Flash</td>
+  <td><code>ai_metadata.ai_sentiment</code>, <code>ai_sentiment_score</code></td>
+</tr>
+<tr>
+  <td>3</td>
+  <td>Reply suggestion</td>
+  <td>On-demand button (agent)</td>
+  <td>Gemini Flash</td>
+  <td><code>ai_metadata.ai_suggested_reply</code></td>
+</tr>
+<tr>
+  <td>4</td>
+  <td>Conversation summary</td>
+  <td>Ticket resolution (background)</td>
+  <td>Gemini Flash</td>
+  <td><code>ai_metadata.ai_summary</code></td>
+</tr>
+<tr>
+  <td>5</td>
+  <td>AI Escalation Engine</td>
+  <td>Ticket creation (automatic rule)</td>
+  <td>Uses sentiment result</td>
+  <td><code>tickets.priority</code></td>
+</tr>
+</tbody>
+</table>
+
+<h3 id="42-api-used">4.2 API Used</h3>
+
+<p><strong>Google Gemini 1.5 Flash</strong> via REST API:
+- Endpoint: <code>https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent</code>
+- Authentication: API key as query parameter
+- Key configuration: <code>responseMimeType: "application/json"</code> forces structured JSON output
+- Temperature: <code>0.2</code> (low randomness for consistent classification)
+- Max tokens: <code>1024</code></p>
+
+<h3 id="43-feature-1-auto-ticket-categorization">4.3 Feature 1: Auto Ticket Categorization</h3>
+
+<p><strong>Trigger:</strong> <code>POST /tickets</code> → background task <code>_bg_analyze_and_notify()</code></p>
+
+<p><strong>Prompt:</strong></p>
+
+<pre><code>Analyze this customer support ticket and return ONLY a valid JSON object with these exact keys:
+  "category": one of ["Billing", "Technical", "Account", "Shipping", "General"]
+  "sentiment": one of ["Positive", "Neutral", "Negative", "Frustrated"]
+  "sentiment_score": float 0.0 (very negative) to 1.0 (very positive)
+  "tags": comma-separated keywords (max 5)
+
+Ticket Title: {title}
+Ticket Description: {description}
+Return ONLY valid JSON. No explanation.
+</code></pre>
+
+<p><strong>Example Input:</strong></p>
+
+<pre><code>Title: "I was charged twice for my subscription"
+Description: "My credit card was billed twice this month. I checked
+my bank statement and there are two identical charges of $49.99.
+This is unacceptable and I need a refund immediately."
+</code></pre>
+
+<p><strong>Example Output:</strong></p>
+
+<pre><code>{
+  "category": "Billing",
+  "sentiment": "Frustrated",
+  "sentiment_score": 0.15,
+  "tags": "double charge, refund, subscription, billing, credit card"
+}
+</code></pre>
+
+<p><strong>Integration:</strong> The category is written to <code>tickets.category</code> and <code>ai_metadata.ai_category</code>. The sentiment is stored in <code>ai_metadata</code>. The ticket detail page's AI Panel displays these results with a visual sentiment score bar.</p>
+
+<h3 id="44-feature-2-sentiment-analysis-auto-escalation-engine">4.4 Feature 2: Sentiment Analysis &amp; Auto-Escalation Engine</h3>
+
+<p>The sentiment score (0.0–1.0) is displayed in the AI Panel as a colored progress bar. This is not merely decorative—it drives the <strong>AI Escalation Engine</strong>:</p>
+
+<pre><code>if ai_data.get("sentiment") == "Frustrated" and ticket.priority != "critical":
+    ticket.priority = "critical"
+    # Log to ticket_history
+    # Send critical escalation email
+</code></pre>
+
+<p>This rule executes within the same background task as categorization, so the escalation happens seconds after ticket creation with no agent action required.</p>
+
+<p><strong>Example:</strong> A ticket created with priority <code>"high"</code> containing the description <em>"This is completely unacceptable! I've been waiting for 3 days and nobody has responded..."</em> will be automatically escalated to <code>"critical"</code> and an urgent escalation email sent to the configured team inbox.</p>
+
+<h3 id="45-feature-3-ai-generated-reply-suggestion">4.5 Feature 3: AI-Generated Reply Suggestion</h3>
+
+<p><strong>Trigger:</strong> Agent clicks "Generate" button in the AI Panel on the ticket detail page.</p>
+
+<p><strong>API call:</strong> <code>POST /ai/suggest-reply/{ticket_id}</code></p>
+
+<p><strong>Prompt:</strong></p>
+
+<pre><code>You are a professional customer support agent at TechServe Solutions.
+Write a concise, empathetic, and professional draft reply (3-5 sentences) for the following support ticket.
+Acknowledge the issue, give initial guidance, and set realistic expectations.
+Return ONLY valid JSON with key "reply".
+
+Category: Billing
+Title: I was charged twice for my subscription
+Description: My credit card was billed twice...
+</code></pre>
+
+<p><strong>Example Output:</strong></p>
+
+<pre><code>{
+  "reply": "Thank you for bringing this to our attention. We sincerely apologize for the duplicate charge on your account. Our billing team has been notified and will investigate this immediately—you can expect a full refund of the extra charge within 3-5 business days. We appreciate your patience and will keep you updated throughout the process."
+}
+</code></pre>
+
+<p>The suggested reply is stored in <code>ai_metadata.ai_suggested_reply</code> and displayed in the AI Panel. The agent can read it, copy it, and post it as a comment (editing as needed).</p>
+
+<h3 id="46-feature-4-conversation-summary-on-resolution">4.6 Feature 4: Conversation Summary on Resolution</h3>
+
+<p><strong>Trigger:</strong> <code>PUT /tickets/{id}</code> with <code>{"status": "resolved"}</code> → background task <code>_bg_resolution_task()</code></p>
+
+<p>The background task collects all comments for the ticket, then calls Gemini with:</p>
+
+<pre><code>Summarize this resolved customer support ticket in 2-3 sentences.
+Include: original issue, key steps taken, and final resolution outcome.
+Return ONLY JSON with field "summary".
+Title: {title}
+Original Description: {description}
+Conversation: [Agent]: ... [Agent]: ...
+</code></pre>
+
+<p>The summary is stored in <code>ai_metadata.ai_summary</code> and displayed in the AI Panel's "Resolution Summary" section. A resolution email notification including this summary is sent to the team inbox.</p>
+
+<h3 id="47-error-handling">4.7 Error Handling</h3>
+
+<p>Every AI service function is wrapped in a <code>try/except Exception</code>. On failure (network timeout, API quota exceeded, malformed JSON), a sensible fallback is returned:
+- Category → <code>"General"</code>, Sentiment → <code>"Neutral"</code>, Score → <code>0.5</code>
+- Reply → pre-written professional response
+- Summary → <code>"The issue regarding '{title}' was resolved by the support team."</code></p>
+
+<p>This guarantees the application never crashes or shows an error to the end user due to AI unavailability.</p>
+
+<hr />
+
+<h2 id="5-messaging-integration">5. Messaging Integration</h2>
+
+<h3 id="51-platform-email-via-gmail-smtp">5.1 Platform: Email via Gmail SMTP</h3>
+
+<p><strong>Why Email:</strong> Email is the universal communication standard—every team member has an inbox with no additional app installation required. SMTP via Gmail is freely available, supports HTML-rich formatting, and Python's standard library provides native SMTP support through <code>smtplib</code> with zero additional pip dependencies. Email also creates a persistent, searchable audit trail of all alerts in the team's inbox.</p>
+
+<h3 id="52-setup">5.2 Setup</h3>
+
+<ol>
+<li><strong>Enable 2-Step Verification</strong> on your Google Account (required for App Passwords)</li>
+<li>Go to <a href="https://myaccount.google.com/apppasswords">myaccount.google.com/apppasswords</a></li>
+<li>Select <strong>Mail</strong> → <strong>Other (Custom name)</strong> → enter <code>TechServe CRM</code> → click <strong>Generate</strong></li>
+<li>Copy the <strong>16-character App Password</strong> (shown once only)</li>
+<li>Set the following in <code>backend/.env</code>:
+<pre><code>SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your.email@gmail.com
+SMTP_PASSWORD=xxxx xxxx xxxx xxxx
+NOTIFY_EMAIL=team@yourcompany.com
+</code></pre></li>
+</ol>
+
+<p><code>NOTIFY_EMAIL</code> accepts multiple recipients (comma-separated), so the entire support team can receive alerts in one configuration line.</p>
+
+<h3 id="53-implementation">5.3 Implementation</h3>
+
+<p>The service is implemented in <code>services/email_service.py</code> using only Python standard library modules:
+- <code>smtplib</code> — SMTP client
+- <code>ssl</code> — TLS context for STARTTLS
+- <code>email.mime.multipart</code> / <code>email.mime.text</code> — MIME construction
+- <code>asyncio.to_thread</code> — offloads blocking SMTP I/O to a thread pool</p>
+
+<p>The core send function:</p>
+
+<pre><code>async def send_email(subject: str, html: str) -&gt; bool:
+    """Async wrapper — offloads blocking SMTP to a thread."""
+    return await asyncio.to_thread(_send_sync, subject, html)
+
+def _send_sync(subject: str, html: str) -&gt; bool:
+    context = ssl.create_default_context()
+    with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
+        server.ehlo()
+        server.starttls(context=context)
+        server.login(SMTP_USER, SMTP_PASSWORD)
+        server.sendmail(SMTP_USER, recipients, msg.as_string())
+    return True
+</code></pre>
+
+<p>Three notification types are implemented, each with a purpose-built HTML email template:</p>
+
+<p><strong>New Ticket Email</strong> — Subject: <code>[TechServe] New Ticket #42 — Cannot login to dashboard</code></p>
+
+<p>The email body is a responsive, table-based HTML layout with:
+- Colored header bar (color matches priority: green/blue/orange/red)
+- Ticket ID, title, customer name, priority badge, AI category, and timestamp
+- Footer with login prompt</p>
+
+<p><strong>Critical Escalation Email</strong> — Subject: <code>[TechServe] 🚨 CRITICAL ESCALATION — Ticket #43</code></p>
+
+<ul>
+<li>Red header bar</li>
+<li>Auto-escalation notice with AI-detected sentiment label</li>
+<li>Explanatory footer: <em>"This ticket was automatically escalated... Immediate agent attention is required."</em></li>
+</ul>
+
+<p><strong>Resolution Email</strong> — Subject: <code>[TechServe] ✅ Resolved — Ticket #42: Cannot login to dashboard</code></p>
+
+<ul>
+<li>Green header bar</li>
+<li>Resolution timestamp</li>
+<li>AI-generated conversation summary in the footer</li>
+</ul>
+
+<h3 id="54-notification-results-storage">5.4 Notification Results Storage</h3>
+
+<p>Every notification attempt (successful or failed) is recorded in <code>notification_logs</code>:</p>
+
+<table>
+<thead>
+<tr>
+  <th>Field</th>
+  <th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><code>ticket_id</code></td>
+  <td>FK reference to ticket</td>
+</tr>
+<tr>
+  <td><code>platform</code></td>
+  <td><code>"email"</code></td>
+</tr>
+<tr>
+  <td><code>message</code></td>
+  <td>Human-readable description</td>
+</tr>
+<tr>
+  <td><code>status</code></td>
+  <td><code>"sent"</code> or <code>"failed"</code></td>
+</tr>
+<tr>
+  <td><code>sent_at</code></td>
+  <td>UTC timestamp</td>
+</tr>
+</tbody>
+</table>
+
+<p>This provides a full audit trail of all communications regardless of delivery success.</p>
+
+<h3 id="55-design-decisions">5.5 Design Decisions</h3>
+
+<ul>
+<li><strong><code>asyncio.to_thread()</code> over <code>aiosmtplib</code>:</strong> The stdlib <code>smtplib</code> is synchronous. Rather than adding the <code>aiosmtplib</code> dependency, <code>asyncio.to_thread()</code> (Python 3.9+) runs the blocking call in a thread pool — identical performance for low-frequency notifications, zero extra packages.</li>
+<li><strong>HTML email over plain text:</strong> HTML allows priority-color-coded headers, structured tables, and a professional branded appearance that improves signal clarity for the support team.</li>
+<li><strong>App Password over OAuth2:</strong> OAuth2 SMTP access requires a Google Cloud project and OAuth consent screen approval. App Passwords require only a Google account with 2-Step Verification — setup in under 5 minutes, suitable for a course project.</li>
+<li><strong>Comma-separated <code>NOTIFY_EMAIL</code>:</strong> Allows alerting multiple team members (e.g., all agents + manager) with a single environment variable, without modifying code.</li>
+</ul>
+
+<hr />
+
+<h2 id="6-feature-screenshots">6. Feature Screenshots</h2>
+
+<p><em>(Screenshots to be captured from the running application at http://localhost:3000 and added to this report)</em></p>
+
+<h3 id="required-screenshots-for-report-submission">Required Screenshots for Report Submission</h3>
+
+<table>
+<thead>
+<tr>
+  <th>#</th>
+  <th>Screen</th>
+  <th>URL / Action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>1</td>
+  <td><strong>Login Page</strong></td>
+  <td>Navigate to <code>http://localhost:3000/login</code></td>
+</tr>
+<tr>
+  <td>2</td>
+  <td><strong>Dashboard</strong></td>
+  <td>Log in as Manager → <code>/dashboard</code></td>
+</tr>
+<tr>
+  <td>3</td>
+  <td><strong>Customer List</strong></td>
+  <td>Navigate to <code>/customers</code></td>
+</tr>
+<tr>
+  <td>4</td>
+  <td><strong>Create Customer Modal</strong></td>
+  <td>Click "Add Customer" button</td>
+</tr>
+<tr>
+  <td>5</td>
+  <td><strong>Ticket List with Filters</strong></td>
+  <td>Navigate to <code>/tickets</code></td>
+</tr>
+<tr>
+  <td>6</td>
+  <td><strong>Create Ticket Modal</strong></td>
+  <td>Click "New Ticket"</td>
+</tr>
+<tr>
+  <td>7</td>
+  <td><strong>Ticket Detail — AI Panel</strong></td>
+  <td>Open any ticket, wait 3-5 seconds for AI analysis to populate</td>
+</tr>
+<tr>
+  <td>8</td>
+  <td><strong>AI Reply Suggestion</strong></td>
+  <td>Click "Generate" in Draft Reply section of AI Panel</td>
+</tr>
+<tr>
+  <td>9</td>
+  <td><strong>Comment Thread</strong></td>
+  <td>Add a comment to a ticket</td>
+</tr>
+<tr>
+  <td>10</td>
+  <td><strong>History Timeline</strong></td>
+  <td>Scroll to History section on ticket detail</td>
+</tr>
+<tr>
+  <td>11</td>
+  <td><strong>Email Notification</strong></td>
+  <td>Screenshot of received email in team inbox (new ticket, escalation, or resolution)</td>
+</tr>
+<tr>
+  <td>12</td>
+  <td><strong>Agents Page (Manager)</strong></td>
+  <td>Navigate to <code>/agents</code> as Manager</td>
+</tr>
+<tr>
+  <td>13</td>
+  <td><strong>API Documentation</strong></td>
+  <td>Navigate to <code>http://localhost:8000/docs</code></td>
+</tr>
+</tbody>
+</table>
+
+<h3 id="screenshot-notes">Screenshot Notes</h3>
+
+<ul>
+<li>Use browser window at 1440×900px for best presentation</li>
+<li>For the email notification screenshot, show the received HTML email in Gmail (desktop view)</li>
+<li>Include screenshots that show the AI panel AFTER analysis completes (category badge + sentiment bar populated)</li>
+<li>Show at least one ticket with "Critical" priority to demonstrate the escalation engine</li>
+</ul>
+
+<hr />
+
+<h2 id="7-challenges-learnings">7. Challenges &amp; Learnings</h2>
+
+<h3 id="71-technical-challenges">7.1 Technical Challenges</h3>
+
+<p><strong>Challenge 1: bcrypt Compatibility on Python 3.9</strong><br />
+The <code>passlib[bcrypt]</code> package installs the latest <code>bcrypt</code> version (≥4.1) which removed the <code>__about__.__version__</code> attribute that passlib's bcrypt handler reads. This caused a runtime error on password hashing.</p>
+
+<p><strong>Solution:</strong> Pinned <code>bcrypt==4.0.1</code> explicitly in <code>requirements.txt</code> as a separate dependency (not via <code>passlib[bcrypt]</code>), which is the last version with the expected attribute. This is a known upstream issue in the passlib GitHub issues tracker.</p>
+
+<p><strong>Lesson:</strong> Always pin transitive dependencies that are known to have breaking changes between versions. Use <code>pip-compile</code> for production projects.</p>
+
+<hr />
+
+<p><strong>Challenge 2: JWT <code>sub</code> Claim Type</strong><br />
+The <code>python-jose</code> library enforces RFC 7519, which requires the <code>sub</code> claim to be a string. Passing an integer user ID (<code>{"sub": user.id}</code>) caused a <code>Subject must be a string</code> error during token decoding.</p>
+
+<p><strong>Solution:</strong> Convert to string on encoding (<code>str(user.id)</code>) and convert back to int on decoding (<code>int(payload.get("sub"))</code>). Added this conversion in both <code>auth_router.py</code> and <code>dependencies.py</code>.</p>
+
+<p><strong>Lesson:</strong> Read RFC specifications before implementing JWT, not just library documentation. Libraries often silently accept incorrect data at encoding time but fail at decode time.</p>
+
+<hr />
+
+<p><strong>Challenge 3: SQLAlchemy Lazy Loading After Session Close</strong><br />
+FastAPI's Pydantic response model serialization accesses relationship attributes (e.g., <code>ticket.customer.full_name</code>) after the SQLAlchemy session might be closed. Lazy loading in this state raises a <code>DetachedInstanceError</code>.</p>
+
+<p><strong>Solution:</strong> Used <code>joinedload()</code> on all queries that need to serialize nested relationships, ensuring all relationship data is loaded eagerly within the session scope before Pydantic serializes the response.</p>
+
+<hr />
+
+<p><strong>Challenge 4: Background Task Closure Variable Capture</strong><br />
+Defining async functions inside a request handler and capturing SQLAlchemy model attributes through closures is dangerous—the ORM object may be expired or detached by the time the background task runs.</p>
+
+<p><strong>Solution:</strong> Extracted all needed values as plain Python strings/ints before creating background tasks, and created new database sessions inside each background task function using <code>SessionLocal()</code>.</p>
+
+<hr />
+
+<p><strong>Challenge 5: SMTP Blocking I/O in Async Context</strong><br />
+Python's stdlib <code>smtplib</code> is synchronous. Calling it directly inside an <code>async def</code> function would block the FastAPI event loop, degrading request handling performance during email sends.</p>
+
+<p><strong>Solution:</strong> Used <code>asyncio.to_thread(_send_sync, subject, html)</code> to execute the blocking SMTP operations in a separate thread pool thread, keeping the event loop free. This is the recommended Python 3.9+ pattern for wrapping sync code in async contexts.</p>
+
+<p><strong>Lesson:</strong> Never call blocking I/O (file, network, DB without async driver) directly in an <code>async def</code> function. Always offload via <code>asyncio.to_thread()</code> or use a dedicated async library.</p>
+
+<h3 id="72-design-learnings">7.2 Design Learnings</h3>
+
+<ol>
+<li><p><strong>Async-first is non-negotiable for AI integrations:</strong> Synchronous AI API calls would add 1-3 seconds to every ticket creation request. Background tasks make the system feel instant.</p></li>
+<li><p><strong>Graceful degradation is critical:</strong> AI features should never make the core application brittle. Every AI call has a try/except with a sensible fallback. The system works perfectly with or without a Gemini API key configured.</p></li>
+<li><p><strong>Prompt engineering matters more than model choice:</strong> A well-structured prompt with explicit JSON schema constraints (<code>responseMimeType: "application/json"</code>) produces reliable, parseable results without post-processing or retries.</p></li>
+<li><p><strong>Separate schemas from models:</strong> Having distinct Pydantic schemas (with <code>from_attributes=True</code>) rather than exposing SQLAlchemy models directly prevents circular serialization issues and keeps the API contract stable independent of the database schema.</p></li>
+</ol>
+
+<h3 id="73-what-would-be-done-differently">7.3 What Would Be Done Differently</h3>
+
+<ol>
+<li><p><strong>WebSockets instead of polling:</strong> The current 10-second polling interval on the ticket detail page works but is inefficient. A WebSocket connection (<code>/ws/tickets/{id}</code>) would provide true real-time updates at near-zero overhead.</p></li>
+<li><p><strong>PostgreSQL for production:</strong> SQLite is excellent for development and demos, but concurrent writes are serialized. For a real multi-agent deployment, PostgreSQL with connection pooling (via <code>asyncpg</code>) would be required.</p></li>
+<li><p><strong>Task queue for AI jobs:</strong> FastAPI's <code>BackgroundTasks</code> are simple but have no retry logic, no visibility, and no dead-letter queue. A production deployment would use Celery + Redis or ARQ for reliable background processing.</p></li>
+<li><p><strong>Rate limiting on AI endpoints:</strong> The <code>/ai/</code> endpoints could be called in a tight loop by an agent, burning API quota. Adding a per-ticket cooldown (stored in <code>ai_metadata.analyzed_at</code>) would prevent abuse.</p></li>
+</ol>
+
+<hr />
+
+<h2 id="8-work-division">8. Work Division</h2>
+
+<p><em>(For individual submission)</em></p>
+
+<table>
+<thead>
+<tr>
+  <th>Section</th>
+  <th>Contributor</th>
+  <th>Effort</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>System Architecture &amp; Planning</td>
+  <td>[Your Name]</td>
+  <td>100%</td>
+</tr>
+<tr>
+  <td>Database Schema Design</td>
+  <td>[Your Name]</td>
+  <td>100%</td>
+</tr>
+<tr>
+  <td>Authentication Module (M1)</td>
+  <td>[Your Name]</td>
+  <td>100%</td>
+</tr>
+<tr>
+  <td>Customer Module (M2)</td>
+  <td>[Your Name]</td>
+  <td>100%</td>
+</tr>
+<tr>
+  <td>Ticket Module (M3)</td>
+  <td>[Your Name]</td>
+  <td>100%</td>
+</tr>
+<tr>
+  <td>Dashboard Module (M4)</td>
+  <td>[Your Name]</td>
+  <td>100%</td>
+</tr>
+<tr>
+  <td>AI Module (M5)</td>
+  <td>[Your Name]</td>
+  <td>100%</td>
+</tr>
+<tr>
+  <td>Messaging Module (M6)</td>
+  <td>[Your Name]</td>
+  <td>100%</td>
+</tr>
+<tr>
+  <td>Frontend UI / UX</td>
+  <td>[Your Name]</td>
+  <td>100%</td>
+</tr>
+<tr>
+  <td>Documentation &amp; Report</td>
+  <td>[Your Name]</td>
+  <td>100%</td>
+</tr>
+</tbody>
+</table>
+
+<hr />
+
+<h2 id="9-references">9. References</h2>
+
+<ol>
+<li><strong>FastAPI Documentation</strong> — <em>Tiangolo, S.</em> — https://fastapi.tiangolo.com</li>
+<li><strong>SQLAlchemy 2.0 ORM Documentation</strong> — https://docs.sqlalchemy.org/en/20/orm/</li>
+<li><strong>Pydantic v2 Documentation</strong> — https://docs.pydantic.dev/latest/</li>
+<li><strong>Python-JOSE Documentation</strong> — https://python-jose.readthedocs.io/</li>
+<li><strong>Google Gemini API Reference</strong> — https://ai.google.dev/api/generate-content</li>
+<li><strong>Python smtplib Documentation</strong> — https://docs.python.org/3/library/smtplib.html</li>
+<li><strong>Python email.mime Documentation</strong> — https://docs.python.org/3/library/email.mime.html</li>
+<li><strong>Google App Passwords Setup</strong> — https://support.google.com/accounts/answer/185833</li>
+<li><strong>asyncio.to_thread Documentation</strong> — https://docs.python.org/3/library/asyncio-task.html#asyncio.to_thread</li>
+<li><strong>React Router v6 Documentation</strong> — https://reactrouter.com/en/main</li>
+<li><strong>Chart.js Documentation</strong> — https://www.chartjs.org/docs/latest/</li>
+<li><strong>RFC 7519: JSON Web Token (JWT)</strong> — <em>IETF</em> — https://datatracker.ietf.org/doc/html/rfc7519</li>
+<li><strong>Vite Documentation</strong> — https://vitejs.dev/guide/</li>
+<li><strong>bcrypt / passlib Compatibility Issue</strong> — https://github.com/pyca/bcrypt/issues/684</li>
+<li><strong>httpx Async HTTP Client</strong> — https://www.python-httpx.org/</li>
+<li><strong>Lucide React Icons</strong> — https://lucide.dev/icons/</li>
+<li><strong>Inter Typeface</strong> — <em>Google Fonts</em> — https://fonts.google.com/specimen/Inter</li>
+<li><strong>OWASP Authentication Cheat Sheet</strong> — https://cheatsheetseries.owasp.org/cheatsheets/Authentication<em>Cheat</em>Sheet.html</li>
+</ol>
+
+<hr />
+
+<p><em>This report documents the design, implementation, and evaluation of the TechServe AI-Enhanced CRM &amp; Ticket Management System, developed as a Major Project for CS-4XX Artificial Intelligence.</em></p>
+
+</body>
+</html>

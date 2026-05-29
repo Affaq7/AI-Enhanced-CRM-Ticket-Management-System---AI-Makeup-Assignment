@@ -1,6 +1,6 @@
 # TechServe CRM — AI-Enhanced CRM & Ticket Management System
 
-A full-stack, AI-powered Customer Relationship Management and Ticket Management system with Telegram integration, built as a CS-4XX Major Project.
+A full-stack, AI-powered Customer Relationship Management and Ticket Management system with Email notification integration, built as a CS-4XX Major Project.
 
 ---
 
@@ -14,12 +14,12 @@ A full-stack, AI-powered Customer Relationship Management and Ticket Management 
 ## Tech Stack
 | Layer | Choice |
 |-------|--------|
-| Backend | Python 3.11 + FastAPI |
+| Backend | Python 3.10+ + FastAPI |
 | Database | SQLite (SQLAlchemy ORM) |
 | Frontend | React 18 + Vite + Vanilla CSS |
 | Auth | JWT (python-jose) + bcrypt |
 | AI | Google Gemini 1.5 Flash API |
-| Messaging | Telegram Bot API |
+| Messaging | Email (SMTP via Gmail) |
 
 ---
 
@@ -32,7 +32,7 @@ A full-stack, AI-powered Customer Relationship Management and Ticket Management 
 - ✅ AI Reply Suggestion (draft reply per ticket)
 - ✅ AI Conversation Summary (on resolution)
 - ✅ AI Auto-Escalation Engine (Frustrated → Critical automatically)
-- ✅ Telegram Bot notifications (new ticket, escalation, resolution)
+- ✅ Email notifications (new ticket, critical escalation, resolution with AI summary)
 - ✅ Dashboard with 8 stats + Line/Doughnut/Bar charts
 - ✅ Internal Notes (agent-only comments)
 - ✅ Ticket Activity History Timeline
@@ -47,8 +47,8 @@ A full-stack, AI-powered Customer Relationship Management and Ticket Management 
 ### Prerequisites
 - Python 3.10+
 - Node.js 18+
-- A Google Gemini API key ([aistudio.google.com](https://aistudio.google.com))
-- A Telegram Bot token ([BotFather](https://t.me/BotFather))
+- A Google Gemini API key ([aistudio.google.com](https://aistudio.google.com)) — free
+- A Gmail account with an App Password (for email notifications)
 
 ### 1. Clone the repository
 ```bash
@@ -61,7 +61,7 @@ cd techserve-crm
 cd backend
 
 # Create virtual environment
-python -m venv venv
+python3 -m venv venv
 source venv/bin/activate  # Windows: venv\Scripts\activate
 
 # Install dependencies
@@ -75,7 +75,7 @@ cp .env.example .env
 uvicorn main:app --reload --port 8000
 ```
 
-The API will be available at `http://localhost:8000`  
+API available at `http://localhost:8000`  
 Interactive docs: `http://localhost:8000/docs`
 
 ### 3. Frontend Setup
@@ -89,9 +89,9 @@ npm install
 npm run dev
 ```
 
-The frontend will be available at `http://localhost:3000`
+Frontend available at `http://localhost:3000`
 
-### 4. Login Credentials (auto-seeded)
+### 4. Login Credentials (auto-seeded on first run)
 | Role | Email | Password |
 |------|-------|----------|
 | Manager | admin@techserve.com | Admin@123 |
@@ -108,26 +108,32 @@ Create `backend/.env` with the following:
 |----------|-------------|----------|
 | `SECRET_KEY` | JWT signing secret (any random string) | Yes |
 | `DATABASE_URL` | SQLite path (default: `sqlite:///./crm.db`) | No |
-| `GEMINI_API_KEY` | Google Gemini API key from aistudio.google.com | Yes (for AI features) |
-| `TELEGRAM_BOT_TOKEN` | Bot token from @BotFather on Telegram | Yes (for notifications) |
-| `TELEGRAM_CHAT_ID` | Chat/group/channel ID to send notifications to | Yes (for notifications) |
+| `GEMINI_API_KEY` | Google Gemini API key from aistudio.google.com | Yes (AI features) |
+| `SMTP_HOST` | SMTP server hostname (default: `smtp.gmail.com`) | Yes (email) |
+| `SMTP_PORT` | SMTP port (default: `587`) | Yes (email) |
+| `SMTP_USER` | Gmail address used to send emails | Yes (email) |
+| `SMTP_PASSWORD` | Gmail App Password (16 characters, NOT your login password) | Yes (email) |
+| `NOTIFY_EMAIL` | Recipient email(s) for notifications (comma-separated) | Yes (email) |
 
-### Getting a Telegram Bot Token
-1. Message [@BotFather](https://t.me/BotFather) on Telegram
-2. Send `/newbot` and follow the prompts
-3. Copy the token provided
-4. Add your bot to a group or channel
-5. Get the chat ID: visit `https://api.telegram.org/bot<TOKEN>/getUpdates` after sending a message
+### Setting Up Gmail Email Notifications
+
+1. Go to your Google Account → **Security** → enable **2-Step Verification**
+2. Visit [myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords)
+3. Select **Mail** → **Other (Custom name)** → enter `TechServe CRM` → click **Generate**
+4. Copy the **16-character App Password** (shown only once)
+5. Set `SMTP_USER=your.email@gmail.com` and `SMTP_PASSWORD=xxxx xxxx xxxx xxxx` in `.env`
+6. Set `NOTIFY_EMAIL` to the address(es) that should receive alerts
+
+> **Note:** Using the App Password works with any Gmail account. No credit card required.
 
 ---
 
 ## Docker Compose (Bonus)
 ```bash
-# Copy env example
+# Copy and fill env file
 cp .env.example .env
-# Fill in .env values
 
-# Launch everything
+# Launch backend + frontend
 docker-compose up --build
 ```
 
@@ -153,7 +159,7 @@ docker-compose up --build
 | POST | /ai/analyze/{id} | Re-analyze ticket with AI |
 | POST | /ai/suggest-reply/{id} | Generate draft reply |
 | POST | /ai/summarize/{id} | Generate conversation summary |
-| GET/POST | /users | List/create agents (manager) |
+| GET/POST | /users | List/create agents (manager only) |
 | PUT/DELETE | /users/{id} | Update/deactivate agent |
 
 ---
@@ -164,20 +170,23 @@ AI_Assignment/
 ├── backend/
 │   ├── main.py              # FastAPI entry + startup seed
 │   ├── database.py          # SQLAlchemy engine
-│   ├── models.py            # ORM models (6 tables)
-│   ├── schemas.py           # Pydantic schemas
+│   ├── models.py            # ORM models (7 tables)
+│   ├── schemas.py           # Pydantic v2 schemas
 │   ├── auth.py              # JWT + bcrypt
 │   ├── dependencies.py      # Auth middleware
 │   ├── routers/             # 6 API routers
-│   └── services/            # AI + Telegram services
+│   └── services/
+│       ├── ai_service.py    # Gemini AI (4 features)
+│       └── email_service.py # SMTP email notifications
 ├── frontend/
 │   └── src/
 │       ├── pages/           # 7 pages
-│       ├── components/      # Reusable components
+│       ├── components/      # 5 reusable components
 │       ├── api/             # Axios client
 │       └── context/         # Auth context
 ├── docker-compose.yml
 ├── .env.example
+├── REPORT.md
 └── README.md
 ```
 
