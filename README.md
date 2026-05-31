@@ -7,7 +7,7 @@ A full-stack, AI-powered Customer Relationship Management and Ticket Management 
 ## Team
 | Name | Student ID | Role |
 |------|-----------|------|
-| [Your Name] | [Your ID] | Full Stack Developer |
+| Muhammad Kumail | 23K-0611 | Full Stack Developer |
 
 ---
 
